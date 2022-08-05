@@ -1,5 +1,68 @@
 [![GoDoc](https://godoc.org/aqwari.net/xml?status.svg)](https://godoc.org/aqwari.net/xml) [![Build Status](https://travis-ci.org/droyo/go-xml.svg?branch=master)](https://travis-ci.org/droyo/go-xml)
 
+## This fork
+
+This is forked to get around
+    https://github.com/droyo/go-xml/issues/32
+    https://github.com/golang/go/issues/11939
+
+And it builds upon the branch `omitempty-structs` from the main repo https://github.com/droyo/go-xml
+
+
+Lets say go-xml main would produce the struct `Foo` in this sample
+```
+package main
+
+import (
+    "encoding/xml"
+    "fmt"
+)
+
+type Foo struct {
+    Bar1 Bar  `xml:"bar1,omitempty"`
+    Bar2 Bar  `xml:"bar2"`
+}
+// encoding.xml.Marshal generates "<Foo><bar1><Bip></Bip></bar1><bar2><Bip></Bip></bar2></Foo>" :(
+
+type Bar struct {
+    Bip string `xml:"Bip"`
+}
+
+func main() {
+    buf, err := xml.Marshal(&Foo{})
+    fmt.Printf("buf is (%s)\n", buf)
+    fmt.Printf("err is (%+v)\n", err)
+}
+```
+
+
+The `omitempty-structs` branch in main repo would generate this
+```
+type Foo struct {
+    Bar1 *Bar  `xml:"bar1,omitempty"`
+    Bar2 *Bar  `xml:"bar2"`
+}
+// encoding.xml.Marshal generates "<Foo></Foo>"
+// If the xsd schema indicated Bar1 had minOccurs=0 and Bar2 had minOccurs=1
+// then xsdgen noted that and added the omitempty tag.
+// But branch `omitempty-structs` lets us fully omit Bar2 even though it had minOccurs=1
+```
+
+The `omitempty-structs-2` branch in this forkr would generate
+```
+type Foo struct {
+    Bar1 *Bar  `xml:"bar1,omitempty"`
+    Bar2  Bar  `xml:"bar2"`
+}
+// Marshals as "<Foo><bar2><Bip></Bip></bar2></Foo>"
+// So any required field is generated, even if it is empty
+```
+
+The difference between branch `omitempty-structs` and `omitempty-structs-2` is just a few lines.
+
+`omitempty-structs-2` was then merged to `main` (on this fork) to pick up various bug fixes.
+
+
 ## Installation
 
 Requires go 1.9 or greater for golang.org/x/html dependency.
