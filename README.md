@@ -48,13 +48,13 @@ type Foo struct {
 // But branch `omitempty-structs` lets us fully omit Bar2 even though it had minOccurs=1
 ```
 
-The `omitempty-structs-2` branch in this forkr would generate
+The `omitempty-structs-2` branch in this fork would generate
 ```
 type Foo struct {
     Bar1 *Bar  `xml:"bar1,omitempty"`
     Bar2  Bar  `xml:"bar2"`
 }
-// Marshals as "<Foo><bar2><Bip></Bip></bar2></Foo>"
+// encoding.xml.Marshal generates "<Foo><bar2><Bip></Bip></bar2></Foo>"
 // So any required field is generated, even if it is empty
 ```
 
