@@ -6,10 +6,46 @@ This is forked to get around
     https://github.com/droyo/go-xml/issues/32
     https://github.com/golang/go/issues/11939
 
-And it builds upon the branch `omitempty-structs` from the main repo https://github.com/droyo/go-xml
+That issue means when marshalling a struct into xml,
+based upon code generated from an xsd containing a `<choice>` element,
+then the resulting xml would contain every single option, even if empty.
+
+Let's say an XSD has
+```
+    <complexType name="ChooseOne">
+        <choice>
+            <element name="foo" type="FooType"/>
+            <element name="bar" type="BarType"/>
+        </choice>
+    </complexType>
+```
+You'd get a struct like
+```
+    type ChooseOne struct {
+	Foo FooType `xml:"foo,omitempty"`
+	Bar BarType `xml:"bar,omitempty"`
+    }
+```
+And `xml.Marshal(&ChooseOne{})` generates  `"<ChooseOne><foo></foo><bar></bar></ChooseOne>"`
+
+## Hat tip
+
+This fork builds upon the branch `omitempty-structs` from the main repo https://github.com/droyo/go-xml
+
+## More examples
+
+Let's say an XSD has
+```
+    <complexType name="Foo">
+        <choice>
+            <element name="bar1" type="BarType" minOccurs="0"/>
+            <element name="bar2" type="BarType"/>
+        </choice>
+    </complexType>
+```
 
 
-Lets say go-xml main would produce the struct `Foo` in this sample
+Then go-xml main would produce the struct `Foo` in this sample
 ```
 package main
 
